@@ -8,6 +8,9 @@
 #include <pthread.h>
 
 #include "playupdown.h"
+#include "playhangman.h"
+#include "playnbaseball.h"
+#include "playchosung.h"
 
 // client 구조
 struct client_info {
@@ -109,20 +112,30 @@ void *recv_message(void *sock)
 
         char sliced[20];
 
-        const char *needle = "/updown";
+        const char *needle = "/";
         char *substring = strstr(message, needle);
 
         if (substring != NULL) {
             strcpy(sliced, substring);
-            printf("sliced string: %s\n", sliced);
+            printf("play game: %s\n", sliced);
 
-            play_updown(clnts, count);
+            if (strcmp(sliced, "/updown\n") == 0) {
+                play_updown(clnts, count);
+            } else if (strcmp(sliced, "/hangman\n") == 0) {
+                play_hangman(clnts, count);
+            } else if (strcmp(sliced, "/numberbaseball\n") == 0) {
+                play_numberbaseball(clnts, count);
+            } else if (strcmp(sliced, "/chosung\n") == 0) {
+                play_chosung(clnts, count);
+            } else {
+                sendmessagetoclients("잘못된 입력\n", ci.socknum);
+            }
         } else {
-            printf("substring not found\n");
+            // printf("substring not found\n");
+            sendmessagetoclients(message, ci.socknum);
+            fputs(message, stdout);
         }
 
-        sendmessagetoclients(message, ci.socknum);
-        fputs(message, stdout);
         memset(message, '\0', sizeof(message));
     }
 
